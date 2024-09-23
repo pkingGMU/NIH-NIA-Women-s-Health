@@ -1,6 +1,6 @@
 # NIH-NIA-Women-s-Health
 
-**Authors:** Patrick, Mackenzie
+**Authors:** Patrick
 
 ## Description
 
