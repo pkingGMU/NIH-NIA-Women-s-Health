@@ -557,7 +557,10 @@ function packetInfo = getPacketInfo(fid, options)
         if options.useC
             date = datenum(parseDate(ts));
         else
+            %CHANGED BECAUSE NOT PARSING CORRECTLY
             date = parseDateML(ts);
+            
+            %date = ts;
         end
         packetInfo(i,2) = date + tsf(i);
     end

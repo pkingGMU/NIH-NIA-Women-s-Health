@@ -20,8 +20,3 @@ subjects_list = arrange_subjects(folder);
 subjects = process(subjects_list);
 
 
-
-%% Get axes data
-
-axes = subjects.subTest_Subject.cwa_data.AXES;
-

@@ -1,4 +1,4 @@
-function [cwa_data, cwa_info] = arrange_tables(folder)
+function [cwa_data, cwa_info, cwa_data_tables] = arrange_tables(folder)
     %%%
     % Looking at the directory 'folder'. 
     % 
@@ -41,8 +41,54 @@ function [cwa_data, cwa_info] = arrange_tables(folder)
         % Debugging
         disp(file_name_short)
 
-        cwa_data = read_CWA(file_name);
+        % Get raw data info. This gives us start and stop times so it can
+        % accuratly give us our time
         cwa_info = read_CWA(file_name,'info', 1);
+        
+        % Get raw data
+        cwa_data = read_CWA(file_name, ...
+            'packetInfo', cwa_info.packetInfo, ...
+            'verbose', 1);
+
+        %%% New table for AXES
+        cwa_data_tables.AXES = array2table(cwa_data.AXES, 'VariableNames', {'TIME (UNIX)', 'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
+
+        % Convert column 1 timestamps to datetime
+        converted_time_stamps = datetime(cwa_data.AXES(:,1), 'ConvertFrom', 'datenum');
+
+        % Add the converted timestamps to the table as a new colum
+        cwa_data_tables.AXES.CovertedTime = converted_time_stamps;
+        
+        %%% New table for ACC
+        cwa_data_tables.ACC = array2table(cwa_data.ACC, 'VariableNames', {'TIME (UNIX)', 'Var1', 'Var2', 'Var3'});
+
+        % Convert column 1 timestamps to datetime
+        converted_time_stamps = datetime(cwa_data.ACC(:,1), 'ConvertFrom', 'datenum');
+
+        % Add the converted timestamps to the table as a new colum
+        cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
+
+        %%% New table for TEMP
+        cwa_data_tables.TEMP = array2table(cwa_data.TEMP, 'VariableNames', {'TIME (UNIX)', 'TEMP'});
+
+        % Add the converted timestamps to the table as a new colum
+
+        % TODO: Implement later as the sizes don't match right now
+        % Convert column 1 timestamps to datetime
+        converted_time_stamps = datetime(cwa_data.TEMP(:,1), 'ConvertFrom', 'datenum');
+        cwa_data_tables.TEMP.CovertedTime = converted_time_stamps;
+        
+
+        %%% Get total time for file
+
+        % Define start and end time
+        %start_time = datetime(cwa_info.start.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
+        %end_time = datetime(cwa_info.stop.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
+        %total_time = seconds(end_time-start_time);
+
+        %CHANGE THIS
+        
+
         
      
     end
