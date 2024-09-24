@@ -20,7 +20,7 @@ Preferred folder structure -> Main FOLDER -> Subject FOLDER -> Subject data FILE
 
 **Outpus:** 
 
-subjects struct -> subjects -> subject files -> data
+subjects struct -> subjects -> subject files -> Tables -> AXES Table, ACC Table, TEMP table
 
 Ignore all other variables still working those out
 
