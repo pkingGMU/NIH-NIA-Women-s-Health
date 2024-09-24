@@ -1,4 +1,4 @@
-function [cwa_data] = arrange_tables(folder)
+function [cwa_data, cwa_info] = arrange_tables(folder)
     %%%
     % Looking at the directory 'folder'. 
     % 
@@ -42,6 +42,7 @@ function [cwa_data] = arrange_tables(folder)
         disp(file_name_short)
 
         cwa_data = read_CWA(file_name);
+        cwa_info = read_CWA(file_name,'info', 1);
         
      
     end
