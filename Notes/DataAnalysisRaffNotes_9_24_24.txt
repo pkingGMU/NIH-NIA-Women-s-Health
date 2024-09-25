@@ -1,0 +1,27 @@
+In-Clinic and Natural Gait Observations master protocol (I-CAN-GO) to validate gait using a lumbar accelerometer
+https://www.nature.com/articles/s41598-024-67675-6
+
+SciKit Digital Health: Python Package for Streamlined Wearable Inertial Sensor Data Processing
+https://mhealth.jmir.org/2022/4/e36762/#ref19
+https://github.com/pfizer-opensource/scikit-digital-health/blob/main/src/skdh/gait/core.py
+
+GGIR: A Research Community–Driven Open Source R Package for Generating Physical Activity and Sleep Outcomes From Multi-Day Raw Accelerometer Data
+https://journals.humankinetics.com/view/journals/jmpb/2/3/article-p188.xml
+https://github.com/wadpac/GGIR
+https://github.com/wadpac/GGIRread/tree/main
+https://www.youtube.com/watch?v=S8YPTrYNWdU
+
+GGIR Time gaps
+
+Fs is variable across segments - needs to be interpolated
+ interpolation = 'tmp = resample(rawAccel, rawTime, timeRes[pos:last], rawLast, type = interpolationType)'\
+ \item{interpolationType}{
+    Integer to indicate type of interpolation to be used, 1=linear, 2=nearest neighbour.
+
+### Time gaps in Axivity cwa files
+
+Although this is not expected to occur often, Axivity cwa data can come with faulty data blocks. By 'faulty' we mean that the data in the block is not interpretable. For example, faulty blocks may occur when the device in recording mode is connected to a computer with a USB cable. To address this, the R package `GGIRread`, as used by GGIR to read cwa files, identifies these faulty blocks and imputes them by the last recorded non-faulty acceleration value normalised to 1 *g* (*g* is the unit for gravitational acceleration). 
+The sampling rate of an accelerometer refers to the number of data points recorded and stored per second. Axivity devices are expected by design to have a slightly variable sampling rate over time, which is accounted for by interpolating the data after it is loaded into R. For example, the data may have been collected at 99.7 Hertz for one block, and the interpolation technique will then interpolate the data such that it is 100 Hertz. The interpolation happens inside the R package `GGIRread`. The exact technique used for the interpolation is set by parameter `interpolationType` and uses linear interpolation by default (`interpolationType = 1`), but you can also set it to nearest neighbour interpolation (`interpolationType = 2`). As a quality assurance, `GGIRread` keeps track of the variation in sampling rate per data block and automatically imputes blocks (smallest segment of data in a cwa file, typically a few seconds long) where the sampling rate deviates by more than 10% from the expected sampling rate. The imputation technique is the same as for the time gaps as detailed earlier in this section. If you are unhappy with the 10% threshold then you have the possibility of changing this percentage with the parameter `frequency_tol`. Biased sampling rates of this kind are expected to be extremely rare and are not expected to affect normal research conditions, but we nonetheless like to be able to account for them.
+Additionally, to monitor this process of handling faulty blocks and outliers in sampling rate, `GGIRread` logs a series of file health statistics which are stored by GGIR in the 'data_quality_report.csv' file located within the 'QC' folder of the output directory 'results' (see previous chapter for discussion on GGIR output). The data quality report, comes with variable names prefixed with 'filehealth', detailing the number and duration of time gaps detected during the recording(s), as well as number of epochs that have 5-10% or more than 10% bias in sampling rate.
+
+ 
