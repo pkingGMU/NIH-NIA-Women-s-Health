@@ -87,7 +87,7 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
         cwa_data_tables.AXES.Time = timestamps_repeated';
         
         % Debugging
-        disp('repeated time stamps:' + timestamps_repeated(1:10))
+        
 
         
         %%% New table for ACC
