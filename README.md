@@ -4,7 +4,7 @@
 
 ## Description
 
-This code will allow a user to select a dedicated folder. The code will then parse all of the data into `PacketInfo`, `AXES`, `ACC`, and `TEMP` per subject in struct labeled `subjects`.
+This code will allow a user to select a dedicated folder. The code will then parse all of the data into `cwa_data` (RAW), `info`, `time`, `Tables` (INTERPOLATED and ZEROED), and `sample rate` per subject in struct labeled `subjects`.
 
 **ISSUES**: None
 
