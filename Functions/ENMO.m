@@ -1,9 +1,11 @@
 function [] = ENMO(data_table)
 %ENMO Summary of this function goes here
+    frame_end = 30000;
+    
 %   Detailed explanation goes here
-    ax = data_table{1:10000, {'Ax'}};
-    ay = data_table{1:10000, {'Ay'}};
-    az = data_table{1:10000, {'Az'}};
+    ax = data_table{1:frame_end, {'Ax'}};
+    ay = data_table{1:frame_end, {'Ay'}};
+    az = data_table{1:frame_end, {'Az'}};
 
     % Step 1: Calculate the magnitude for each frame
     magnitude = sqrt(ax.^2 + ay.^2 + az.^2);
@@ -18,8 +20,8 @@ function [] = ENMO(data_table)
     
     % Plot ENMO over time
     figure;
-    plot(ENMO);
-    xlabel('Frames');
+    plot(time, ENMO);
+    xlabel('Time');
     ylabel('ENMO (g)');
     title('ENMO over Time');
 

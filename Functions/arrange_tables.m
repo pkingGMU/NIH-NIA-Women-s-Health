@@ -98,7 +98,8 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
 
         % Add the converted timestamps to the table as a new colum
         %cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
-
+        
+        % Add column for timestamps
         cwa_data_tables.ACC.Time = timestamps_repeated';
 
         %%% New table for TEMP

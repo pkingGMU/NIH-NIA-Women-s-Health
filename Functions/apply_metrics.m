@@ -41,9 +41,9 @@ function allmetrics = apply_metrics(data, sf, ws3, n, lb, hb, zc_lb, zc_hb, zc_s
     do_bfx = false;
     do_bfy = false;
     do_bfz = false;
-    do_zcx = false;
-    do_zcy = false;
-    do_zcz = false;
+    do_zcx = true;
+    do_zcy = true;
+    do_zcz = true;
     do_brondcounts = false;
     do_neishabouricounts = false;
 
