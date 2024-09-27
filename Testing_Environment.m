@@ -3,12 +3,18 @@
 
 pre_filter_rot = table2array(subjects.subTest_Subject.Tables.AXES(:,{'Gx','Gy','Gz'}));
 
+%%
+pre_filter_AXES = table2array(subjects.subTest_Subject.Tables.AXES(:,{'Gx', 'Gy', 'Gz'}));
+pre_filter_AXESnoprocessing = table2array(subjects.subTest_Subject.Tablesnoprocessing.AXES(:,{'Gx', 'Gy', 'Gz'}));
+
 
 %% Filtering
 Fs = 50;
 
-[b, a] = butter(2,3/(Fs/2))
-post_filter_rot = filtfilt(b,a,pre_filter_rot);
+[b, a] = butter(2,.5/(Fs/2));
+post_filter_AXES = filtfilt(b,a,pre_filter_AXES);
+post_filter_AXESnoprocessing = filtfilt(b,a,pre_filter_AXESnoprocessing);
+
 
 
 
@@ -18,22 +24,22 @@ post_filter_rot = filtfilt(b,a,pre_filter_rot);
 
 %% Testing filter difference
 
-frame_end = 30000;
+frame_end = 100000;
 
-subset = pre_filter_rot(1:frame_end, :); % Adjust to your data structure
-filtered_subset = post_filter_rot(1:frame_end, :); % Adjust to your data structure
+subset = post_filter_AXES(1:frame_end, :); % Adjust to your data structure
+processed_subset = post_filter_AXESnoprocessing(1:frame_end, :); % Adjust to your data structure
 
 % Plot the original data
 figure;
 subplot(2,1,1); % Split the plot into 2 rows
 plot(subset); % Plot the original subset
-title('Original Data (Subset)');
+title('Original Data (Not-Processed)');
 legend('X', 'Y', 'Z');
 
 % Plot the filtered data
 subplot(2,1,2);
-plot(filtered_subset); % Plot the filtered subset
-title('Filtered Data (Subset)');
+plot(processed_subset); % Plot the filtered subset
+title('Processed Data');
 legend('X', 'Y', 'Z');
 
 
@@ -49,8 +55,10 @@ lumbar_rotVD1 = lumbar_rotVD1';
 
 
 %% ENMO (Intensity of movement)
-ENMO(subjects.subTest_Subject.Tables.AXES)
+zero_frames = ENMO(subjects.subTest_Subject.Tables.AXES);
 
+%% Zero the data
+test_zero = zero(subjects.subTest_Subject.Tables.AXES, zero_frames);
 
 %% Get metrics
 allmetrics = apply_metrics(subjects.subTest_Subject.Tables.AXES(:, {'Ax','Ay','Az'}), 50, 5);

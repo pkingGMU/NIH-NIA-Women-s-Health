@@ -1,16 +1,18 @@
-function [] = ENMO(data_table)
-%ENMO Summary of this function goes here
+function [zero_frames] = ENMO(data)
+%ENMO 
+
+
     frame_end = 30000;
     
-%   Detailed explanation goes here
-    ax = data_table{1:frame_end, {'Ax'}};
-    ay = data_table{1:frame_end, {'Ay'}};
-    az = data_table{1:frame_end, {'Az'}};
+   
+    ax = data(1:frame_end, 2);
+    ay = data(1:frame_end, 3);
+    az = data(1:frame_end, 4);
 
-    % Step 1: Calculate the magnitude for each frame
+    % Calculate the magnitude for each frame
     magnitude = sqrt(ax.^2 + ay.^2 + az.^2);
 
-    % Step 2: Subtract 1g to account for gravity and clip negative values to zero
+    % Subtract 1g to account for gravity and clip negative values to zero
     ENMO = max(magnitude - 1, 0);
 
     disp(ENMO(1:10));
@@ -20,10 +22,28 @@ function [] = ENMO(data_table)
     
     % Plot ENMO over time
     figure;
-    plot(time, ENMO);
-    xlabel('Time');
+    plot(ENMO);
+    xlabel('Frames');
     ylabel('ENMO (g)');
     title('ENMO over Time');
+    
+    % Ask the user for a start frame
+    
+    start_frame = input('Please Enter Start of Inactivity: ');
+
+    % Ask the user for an end frame
+    
+    end_frame = input('Please Enter End of Inactivity: ');
+
+    %%% Find 'Zero frames' or frames with no activity
+    % Indicies
+    zero_indices = find(ENMO(start_frame:end_frame) == 0);
+
+    % Set zeroes where user specified
+    zero_frames = zero_indices;
+    
+
+
 
 end
 

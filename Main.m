@@ -1,5 +1,6 @@
 %%% MAIN SCRIPT %%%
-
+clc
+clear
 
 %%% Local Imports
 % Add function folder to search path

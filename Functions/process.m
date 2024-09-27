@@ -26,11 +26,13 @@ function [subjects] = process(subjects_list)
         % Struct setup for Axes
         subjects.(subject).Tables.AXES = cwa_data_tables.AXES;
 
+        subjects.(subject).Tablesnoprocessing.AXES = cwa_data_tables.AXESnoprocessing;
+
         % Struct setup for ACC
-        subjects.(subject).Tables.ACC = cwa_data_tables.ACC;
+        %subjects.(subject).Tables.ACC = cwa_data_tables.ACC;
 
         % Struct setup for TEMP
-        subjects.(subject).Tables.TEMP = cwa_data_tables.TEMP;
+        %subjects.(subject).Tables.TEMP = cwa_data_tables.TEMP;
 
         % Struct setup for sample rate
         subjects.(subject).sample_rate = sample_rate;

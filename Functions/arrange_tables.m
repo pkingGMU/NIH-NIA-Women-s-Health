@@ -60,6 +60,10 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
         % SAMPLE RATE
         sample_rate = length(cwa_data.AXES)/total_time;
 
+        % COMPARISON RAW TABLES
+        cwa_data_tables.AXESnoprocessing = array2table(cwa_data.AXES, 'VariableNames', {'UNIX TIME', 'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
+
+
         %%% Interpolation %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         inter_axes = interpolation(total_time, cwa_data.AXES(:, 2:7));
@@ -72,10 +76,22 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
         % Repeat time stamps
         timestamps_repeated = repelem(time_stamps, 50);
 
+        %%% ENMO To Find Inactivity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        zero_frames = ENMO(inter_axes);
+
+        %%% Zeroing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        inter_zero_axes = zero_func(inter_axes, zero_frames);
+        
+        % Does not work because of size atm
+        %inter_zero_acc = zero_func(inter_acc, zero_frames);
+
+
         %%% Tables %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         %%% New table for AXES
-        cwa_data_tables.AXES = array2table(inter_axes, 'VariableNames', {'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
+        cwa_data_tables.AXES = array2table(inter_zero_axes, 'VariableNames', {'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
 
         % Convert column 1 timestamps to datetime
         %converted_time_stamps = datetime(cwa_data.AXES(:,1), 'ConvertFrom', 'datenum');
@@ -91,26 +107,26 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
 
         
         %%% New table for ACC
-        cwa_data_tables.ACC = array2table(inter_acc, 'VariableNames', {'Var1', 'Var2', 'Var3'});
+        %cwa_data_tables.ACC = array2table(inter_acc, 'VariableNames', {'Var1', 'Var2', 'Var3'});
 
         % Convert column 1 timestamps to datetime
-        %converted_time_stamps = datetime(cwa_data.ACC(:,1), 'ConvertFrom', 'datenum');
+        %%%converted_time_stamps = datetime(cwa_data.ACC(:,1), 'ConvertFrom', 'datenum');
 
         % Add the converted timestamps to the table as a new colum
-        %cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
+        %%%%cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
         
         % Add column for timestamps
-        cwa_data_tables.ACC.Time = timestamps_repeated';
+        %cwa_data_tables.ACC.Time = timestamps_repeated';
 
         %%% New table for TEMP
-        cwa_data_tables.TEMP = array2table(cwa_data.TEMP, 'VariableNames', {'TIME (UNIX)', 'TEMP'});
+        %cwa_data_tables.TEMP = array2table(cwa_data.TEMP, 'VariableNames', {'TIME (UNIX)', 'TEMP'});
 
         % Add the converted timestamps to the table as a new colum
 
         % TODO: Implement later as the sizes don't match right now
         % Convert column 1 timestamps to datetime
-        converted_time_stamps = datetime(cwa_data.TEMP(:,1), 'ConvertFrom', 'datenum');
-        cwa_data_tables.TEMP.CovertedTime = converted_time_stamps;
+        %converted_time_stamps = datetime(cwa_data.TEMP(:,1), 'ConvertFrom', 'datenum');
+        %cwa_data_tables.TEMP.CovertedTime = converted_time_stamps;
         
 
         
