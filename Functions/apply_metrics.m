@@ -62,7 +62,7 @@ function allmetrics = apply_metrics(data, sf, ws3, n, lb, hb, zc_lb, zc_hb, zc_s
 
     % Band-pass filtering related metrics
     if do_bfen || do_bfx || do_bfy || do_bfz
-        data_processed = abs(process_axes(data, 'band', [lb, hb], n, sf));
+        data_processed = abs(process_axes(data, 'bandpass', [lb, hb], n, sf));
         if do_bfx
             allmetrics.BFX = averagePerEpoch(data_processed(:, 1), sf, epochsize);
         end
@@ -79,7 +79,7 @@ function allmetrics = apply_metrics(data, sf, ws3, n, lb, hb, zc_lb, zc_hb, zc_s
 
     % Zero crossing count
     if do_zcx || do_zcy || do_zcz
-        data_processed = process_axes(data, 'pass', [zc_lb, zc_hb], zc_order, sf);
+        data_processed = process_axes(data, 'bandpass', [zc_lb, zc_hb], zc_order, sf);
         zc_axes = find([do_zcx, do_zcy, do_zcz]);
         Ndat = size(data_processed, 1);
         for zi = zc_axes

@@ -7,7 +7,7 @@ function [subjects] = process(subjects_list)
         subject = subjects_list(i);
 
         % Get subject data for subject folder
-        [cwa_data, cwa_info, cwa_data_tables] = arrange_tables(subject);
+        [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrange_tables(subject);
     
         % Easy naming convention
         subject =  'sub' + string(subject.name);
@@ -19,7 +19,7 @@ function [subjects] = process(subjects_list)
         subjects.(subject).info = cwa_info;
 
         % Struct setup for total time
-        % subjects.(subject).time = total_time;
+        subjects.(subject).time = total_time;
 
         %%% Struct setup for tables
 
@@ -31,6 +31,9 @@ function [subjects] = process(subjects_list)
 
         % Struct setup for TEMP
         subjects.(subject).Tables.TEMP = cwa_data_tables.TEMP;
+
+        % Struct setup for sample rate
+        subjects.(subject).sample_rate = sample_rate;
 
         
     end

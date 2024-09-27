@@ -1,4 +1,4 @@
-function [cwa_data, cwa_info, cwa_data_tables] = arrange_tables(folder)
+function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrange_tables(folder)
     %%%
     % Looking at the directory 'folder'. 
     % 
@@ -50,23 +50,56 @@ function [cwa_data, cwa_info, cwa_data_tables] = arrange_tables(folder)
             'packetInfo', cwa_info.packetInfo, ...
             'verbose', 1);
 
+        %%% Get total time for file
+
+        % Define start and end time
+        start_time = datetime(cwa_info.start.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
+        end_time = datetime(cwa_info.stop.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
+        total_time = seconds(end_time-start_time);
+
+        % SAMPLE RATE
+        sample_rate = length(cwa_data.AXES)/total_time;
+
+        %%% Interpolation %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        inter_axes = interpolation(total_time, cwa_data.AXES(:, 2:7));
+        inter_acc = interpolation(total_time, cwa_data.ACC(:, 2:4));
+        %inter_temp = interpolation(total_time, cwa_data.TEMP);
+        
+        % Create time vector
+        time_stamps = start_time + seconds(0:(total_time-1)); % 0, 1, 2, ..., num_rows-1 seconds
+
+        % Repeat time stamps
+        timestamps_repeated = repelem(time_stamps, 50);
+
+        %%% Tables %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
         %%% New table for AXES
-        cwa_data_tables.AXES = array2table(cwa_data.AXES, 'VariableNames', {'TIME (UNIX)', 'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
+        cwa_data_tables.AXES = array2table(inter_axes, 'VariableNames', {'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
 
         % Convert column 1 timestamps to datetime
-        converted_time_stamps = datetime(cwa_data.AXES(:,1), 'ConvertFrom', 'datenum');
+        %converted_time_stamps = datetime(cwa_data.AXES(:,1), 'ConvertFrom', 'datenum');
+
 
         % Add the converted timestamps to the table as a new colum
-        cwa_data_tables.AXES.CovertedTime = converted_time_stamps;
+        %cwa_data_tables.AXES.CovertedTime = converted_time_stamps;
+
+        cwa_data_tables.AXES.Time = timestamps_repeated';
+        
+        % Debugging
+        disp('repeated time stamps:' + timestamps_repeated(1:10))
+
         
         %%% New table for ACC
-        cwa_data_tables.ACC = array2table(cwa_data.ACC, 'VariableNames', {'TIME (UNIX)', 'Var1', 'Var2', 'Var3'});
+        cwa_data_tables.ACC = array2table(inter_acc, 'VariableNames', {'Var1', 'Var2', 'Var3'});
 
         % Convert column 1 timestamps to datetime
-        converted_time_stamps = datetime(cwa_data.ACC(:,1), 'ConvertFrom', 'datenum');
+        %converted_time_stamps = datetime(cwa_data.ACC(:,1), 'ConvertFrom', 'datenum');
 
         % Add the converted timestamps to the table as a new colum
-        cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
+        %cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
+
+        cwa_data_tables.ACC.Time = timestamps_repeated';
 
         %%% New table for TEMP
         cwa_data_tables.TEMP = array2table(cwa_data.TEMP, 'VariableNames', {'TIME (UNIX)', 'TEMP'});
@@ -79,14 +112,9 @@ function [cwa_data, cwa_info, cwa_data_tables] = arrange_tables(folder)
         cwa_data_tables.TEMP.CovertedTime = converted_time_stamps;
         
 
-        %%% Get total time for file
+        
 
-        % Define start and end time
-        %start_time = datetime(cwa_info.start.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
-        %end_time = datetime(cwa_info.stop.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
-        %total_time = seconds(end_time-start_time);
-
-        %CHANGE THIS
+        
         
 
         
