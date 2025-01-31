@@ -61,20 +61,28 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
         sample_rate = length(cwa_data.AXES)/total_time;
 
         % COMPARISON RAW TABLES
-        cwa_data_tables.AXESnoprocessing = array2table(cwa_data.AXES, 'VariableNames', {'UNIX TIME', 'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
+        cwa_data_tables.AXESnoprocessing = array2table(cwa_data.AXES, 'VariableNames', {'UNIX TIME', 'Ax', 'Ay', 'Az'});
 
 
         %%% Interpolation %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        inter_axes = interpolation(total_time, cwa_data.AXES(:, 2:7));
-        inter_acc = interpolation(total_time, cwa_data.ACC(:, 2:4));
+        inter_axes = interpolation(total_time, cwa_data.AXES(:, 2:4), sample_rate);
+
+        % %%% Zero around the mean
+        % inter_axes(:,1) = inter_axes(:,1) - mean(inter_axes(:,1));
+        % inter_axes(:,2) = inter_axes(:,2) - mean(inter_axes(:,2));
+        % inter_axes(:,3) = inter_axes(:,3) - mean(inter_axes(:,3));
+        
+
+        inter_acc = interpolation(total_time, cwa_data.ACC(:, 2:4), sample_rate);
         %inter_temp = interpolation(total_time, cwa_data.TEMP);
         
         % Create time vector
         time_stamps = start_time + seconds(0:(total_time-1)); % 0, 1, 2, ..., num_rows-1 seconds
 
         % Repeat time stamps
-        timestamps_repeated = repelem(time_stamps, 50);
+        %%% TODO
+        timestamps_repeated = repelem(time_stamps, 100);
 
         %%% ENMO To Find Inactivity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -91,7 +99,7 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
         %%% Tables %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         %%% New table for AXES
-        cwa_data_tables.AXES = array2table(inter_zero_axes, 'VariableNames', {'Ax', 'Ay', 'Az', 'Gx', 'Gy', 'Gz'});
+        cwa_data_tables.AXES = array2table(inter_zero_axes, 'VariableNames', {'Ax', 'Ay', 'Az'});
 
         % Convert column 1 timestamps to datetime
         %converted_time_stamps = datetime(cwa_data.AXES(:,1), 'ConvertFrom', 'datenum');
