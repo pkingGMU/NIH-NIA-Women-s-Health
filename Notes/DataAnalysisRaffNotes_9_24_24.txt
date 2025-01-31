@@ -25,3 +25,9 @@ The sampling rate of an accelerometer refers to the number of data points record
 Additionally, to monitor this process of handling faulty blocks and outliers in sampling rate, `GGIRread` logs a series of file health statistics which are stored by GGIR in the 'data_quality_report.csv' file located within the 'QC' folder of the output directory 'results' (see previous chapter for discussion on GGIR output). The data quality report, comes with variable names prefixed with 'filehealth', detailing the number and duration of time gaps detected during the recording(s), as well as number of epochs that have 5-10% or more than 10% bias in sampling rate.
 
  
+### More ENMO data
+https://wadpac.github.io/GGIR/articles/chapter4_AccMetrics.html
+https://pmc.ncbi.nlm.nih.gov/articles/PMC5051724/ # Search for ENMO metrics
+
+### Axivity Sample Frequencies
+https://axivity.com/help/21
