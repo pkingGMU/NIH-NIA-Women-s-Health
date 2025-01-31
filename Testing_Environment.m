@@ -1,17 +1,17 @@
 %% Analysis
 % Filter Axes data
 
-pre_filter_rot = table2array(subjects.subTest_Subject.Tables.AXES(:,{'Gx','Gy','Gz'}));
+pre_filter_rot = table2array(subjects.Hope.Tables.AXES(:,{'Ax','Ay','Az'}));
 
 %%
-pre_filter_AXES = table2array(subjects.subTest_Subject.Tables.AXES(:,{'Gx', 'Gy', 'Gz'}));
-pre_filter_AXESnoprocessing = table2array(subjects.subTest_Subject.Tablesnoprocessing.AXES(:,{'Gx', 'Gy', 'Gz'}));
+pre_filter_AXES = table2array(subjects.subHope.Tables.AXES(:,{'Ax', 'Ay', 'Az'}));
+pre_filter_AXESnoprocessing = table2array(subjects.subHope.Tablesnoprocessing.AXES(:,{'Ax', 'Ay', 'Az'}));
 
 
 %% Filtering
-Fs = 50;
+Fs = 100;
 
-[b, a] = butter(2,.5/(Fs/2));
+[b, a] = butter(3,5/(Fs/2));
 post_filter_AXES = filtfilt(b,a,pre_filter_AXES);
 post_filter_AXESnoprocessing = filtfilt(b,a,pre_filter_AXESnoprocessing);
 
@@ -24,10 +24,10 @@ post_filter_AXESnoprocessing = filtfilt(b,a,pre_filter_AXESnoprocessing);
 
 %% Testing filter difference
 
-frame_end = 100000;
+frame_end = 30000000;
 
-subset = post_filter_AXES(1:frame_end, :); % Adjust to your data structure
-processed_subset = post_filter_AXESnoprocessing(1:frame_end, :); % Adjust to your data structure
+processed_subset = post_filter_AXES(1:frame_end, :); % Adjust to your data structure
+subset = post_filter_AXESnoprocessing(1:frame_end, :); % Adjust to your data structure
 
 % Plot the original data
 figure;
