@@ -1,5 +1,5 @@
 
-function data = read_CWA(filename, varargin)
+function data = CWA_readFile(filename, varargin)
     %
     %   NOTES:
     %   * .AXES returns [time Ax Ay Az] or [time Ax Ay Az Gx Gy Gz].

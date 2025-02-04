@@ -1,4 +1,4 @@
-function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrange_tables(folder)
+function [cwa_info, cwa_data_tables, total_time, sample_rate, S] = arrange_tables(folder)
     %%%
     % Looking at the directory 'folder'. 
     % 
@@ -40,43 +40,40 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
 
         % Debugging
         disp(file_name_short)
-
+%%
         % Get raw data info. This gives us start and stop times so it can
         % accuratly give us our time
-        cwa_info = read_CWA(file_name,'info', 1);
-        
-        % Get raw data
-        cwa_data = read_CWA(file_name, ...
-            'packetInfo', cwa_info.packetInfo, ...
-            'verbose', 1);
-
-        %%% Get total time for file
+        cwa_info = CWA_readFile(file_name,'info', 1);
 
         % Define start and end time
         start_time = datetime(cwa_info.start.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
         end_time = datetime(cwa_info.stop.str, "InputFormat", 'dd-MMM-yyyy HH:mm:ss');
         total_time = seconds(end_time-start_time);
 
+        
+        %%
+        % Read in raw data
+        rawData = CWA_readFile(file_name);
+        rawData.ACC(:,2) = rawData.ACC(:,2) * -1; %Hopes trial her sensor was upside down in the ML direction
+
         % SAMPLE RATE
-        sample_rate = length(cwa_data.AXES)/total_time;
+        sample_rate = length(rawData.ACC)/total_time;
+
+      
+        
+        % get samples from stationary periods (at most first 7 days of file)
+        S = getStationaryPeriods(rawData, 'stopTime', rawData.ACC(1,1)+168/24, 'progress', 1);
+        
+        % estimate the calibration parameters (scale, offset, temp-offset)
+        e = estimateCalibration(S, 'verbose', 1);
+        
+        % re-scale data
+        data = rescaleData(rawData, e);
 
         % COMPARISON RAW TABLES
-        cwa_data_tables.AXESnoprocessing = array2table(cwa_data.AXES, 'VariableNames', {'UNIX TIME', 'Ax', 'Ay', 'Az'});
+        cwa_data_tables.AXESnoprocessing = array2table(data.ACC, 'VariableNames', {'UNIX TIME', 'Ax', 'Ay', 'Az'});
 
 
-        %%% Interpolation %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        inter_axes = interpolation(total_time, cwa_data.AXES(:, 2:4), sample_rate);
-
-        % %%% Zero around the mean
-        % inter_axes(:,1) = inter_axes(:,1) - mean(inter_axes(:,1));
-        % inter_axes(:,2) = inter_axes(:,2) - mean(inter_axes(:,2));
-        % inter_axes(:,3) = inter_axes(:,3) - mean(inter_axes(:,3));
-        
-
-        inter_acc = interpolation(total_time, cwa_data.ACC(:, 2:4), sample_rate);
-        %inter_temp = interpolation(total_time, cwa_data.TEMP);
-        
         % Create time vector
         time_stamps = start_time + seconds(0:(total_time-1)); % 0, 1, 2, ..., num_rows-1 seconds
 
@@ -84,57 +81,27 @@ function [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrang
         %%% TODO
         timestamps_repeated = repelem(time_stamps, 100);
 
-        %%% ENMO To Find Inactivity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % %%% ENMO To Find Inactivity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 
+        % zero_frames = ENMO(inter_axes);
+        % 
+        % %%% Zeroing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 
+        % inter_zero_axes = zero_func(inter_axes, zero_frames);
 
-        zero_frames = ENMO(inter_axes);
+        %%% Interpolation %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        %%% Zeroing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        inter_axes = interpolation(total_time, data.ACC(:, 2:4), sample_rate);
         
-        inter_zero_axes = zero_func(inter_axes, zero_frames);
-        
-        % Does not work because of size atm
-        %inter_zero_acc = zero_func(inter_acc, zero_frames);
-
 
         %%% Tables %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         %%% New table for AXES
-        cwa_data_tables.AXES = array2table(inter_zero_axes, 'VariableNames', {'Ax', 'Ay', 'Az'});
-
-        % Convert column 1 timestamps to datetime
-        %converted_time_stamps = datetime(cwa_data.AXES(:,1), 'ConvertFrom', 'datenum');
-
-
-        % Add the converted timestamps to the table as a new colum
-        %cwa_data_tables.AXES.CovertedTime = converted_time_stamps;
+        cwa_data_tables.AXES = array2table(inter_axes, 'VariableNames', {'Ax', 'Ay', 'Az'});
 
         cwa_data_tables.AXES.Time = timestamps_repeated';
-        
-        % Debugging
-        
 
-        
-        %%% New table for ACC
-        %cwa_data_tables.ACC = array2table(inter_acc, 'VariableNames', {'Var1', 'Var2', 'Var3'});
-
-        % Convert column 1 timestamps to datetime
-        %%%converted_time_stamps = datetime(cwa_data.ACC(:,1), 'ConvertFrom', 'datenum');
-
-        % Add the converted timestamps to the table as a new colum
-        %%%%cwa_data_tables.ACC.CovertedTime = converted_time_stamps;
-        
-        % Add column for timestamps
-        %cwa_data_tables.ACC.Time = timestamps_repeated';
-
-        %%% New table for TEMP
-        %cwa_data_tables.TEMP = array2table(cwa_data.TEMP, 'VariableNames', {'TIME (UNIX)', 'TEMP'});
-
-        % Add the converted timestamps to the table as a new colum
-
-        % TODO: Implement later as the sizes don't match right now
-        % Convert column 1 timestamps to datetime
-        %converted_time_stamps = datetime(cwa_data.TEMP(:,1), 'ConvertFrom', 'datenum');
-        %cwa_data_tables.TEMP.CovertedTime = converted_time_stamps;
+     
         
 
         

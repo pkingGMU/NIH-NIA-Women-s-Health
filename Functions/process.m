@@ -7,13 +7,10 @@ function [subjects] = process(subjects_list)
         subject = subjects_list(i);
 
         % Get subject data for subject folder
-        [cwa_data, cwa_info, cwa_data_tables, total_time, sample_rate] = arrange_tables(subject);
+        [cwa_info, cwa_data_tables, total_time, sample_rate, S] = arrange_tables(subject);
     
         % Easy naming convention
         subject =  'sub' + string(subject.name);
-
-        % Struct setup data
-        subjects.(subject).cwa_data = cwa_data;
 
         % Struct setup info
         subjects.(subject).info = cwa_info;
@@ -25,6 +22,7 @@ function [subjects] = process(subjects_list)
 
         % Struct setup for Axes
         subjects.(subject).Tables.AXES = cwa_data_tables.AXES;
+        subjects.(subject).Tables.Stationary = S;
 
         subjects.(subject).Tablesnoprocessing.AXES = cwa_data_tables.AXESnoprocessing;
 
