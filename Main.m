@@ -22,12 +22,6 @@ for i = 1:length(sub_folder)
     files = dir(filePattern);
     
     %%% Loop through all file names in the files array
-    
-    % We loop through the amount of times there are files and set the
-    % variable file = to which loop we'er on.
-    % The first pass file = 1
-    % The second pass file = 2
-    % Etc.....
     for file = 1:numel(files)
         
         
@@ -61,33 +55,94 @@ for i = 1:length(sub_folder)
         %   - https://raw.githubusercontent.com/digitalinteraction/openmovement/master/Software/Analysis/Matlab/SVM.m
         %   - https://raw.githubusercontent.com/digitalinteraction/openmovement/master/Software/Analysis/Matlab/epochs.m
         %
+
+        epochSize = 1;
         
         % Load CWA file re-sampled at 100Hz
         fprintf('Loading and resampling data...\n');
         Fs = 100;
         data = resampleCWA(file_name, Fs);
+
+        %% Angle adjaceent to gravity 
+        med_data = medfilt1(data(:, [2,3,4]), 3);
+
+        % Step 2: Design the third-order elliptical IIR filter (discrete-time)
+        fs = 100; % Sampling frequency (adjust to your data)
+        cutoff = 0.25; % Cutoff frequency in Hz
+        rp = 0.01; % Passband ripple in dB
+        rs = 100; % Stopband attenuation in dB
+        order = 3; % Filter order
+        
+        % Normalize the cutoff frequency
+        nyquist = fs / 2;
+        normalized_cutoff = cutoff / nyquist;
+        
+        % Design the filter using the corrected syntax
+        [b, a] = ellip(order, rp, rs, normalized_cutoff);
+        
+        % Step 3: Apply the low-pass filter to the accelerometer data
+        gravity_vector = filter(b, a, med_data);
+        
+        % data_accel = med_data - gravity_vector;
+        % 
+        % data_accel = data_accel(:, 2);
+        % 
+        % data_accel(data_accel < 0) = 0;
+        % 
+        % data_accel = data_accel ./ gravity_vector;
+        
+        data_grav = gravity_vector(:, 2);
+        data_grav(data_grav < 0) = 0;
+        
+
+        theta_gravity = rad2deg(real(acos(data_grav)));
+        % theta_gravity(theta_gravity > 60 & theta_gravity < 500) = 0;
+
+        %% Window Size 
+        windowSize = 20000;
+        
+        % Number of windows
+        numWindows = floor(length(theta_gravity) / windowSize);
+        
+        % Calculate the mean of each window and compare to RMS
+        for i = 1:numWindows
+            startIdx = (i - 1) * windowSize + 1;
+            endIdx = i * windowSize;
+            
+            % Count how many values exceed the RMS in the current window
+            window_mean = mean(theta_gravity(startIdx:endIdx));
+
+            theta_gravity(startIdx:endIdx) = window_mean;
+        end
+        
+
+       
+        
+        
+        
+        %%
         
         % BP-Filtered SVM-1
         fprintf('Calculating bandpass-filtered SVM(data)...\n');
         svm = SVM(data, Fs, 0.5, 25);
+
+
         %%
-        % Convert to 240 second epochs (sum of absolute SVM-1 values)
-        epochSVM = epochs(abs(svm), 60 * Fs);
+    
+        
+
+        % Convert to 60 second epochs (sum of absolute SVM-1 values)
+        epochSVM = epochs(abs(svm), epochSize * Fs);
+
+        
+
+        
         
         %% RMS
         rms_num = rms(epochSVM);
         
-        %% Plotting SVM
-        % Plot the raw bandpass-filtered SVM data
-        % figure;
-        % plot(svm);  % Plot the filtered SVM signal over time
-        % xlabel('Time (samples)');
-        % ylabel('Filtered SVM');
-        % title('Bandpass-Filtered SVM Signal');
-        % grid on;
-        
         %% Window Size 
-        windowSize = 50;
+        windowSize = 20;
         
         % Number of windows
         numWindows = floor(length(epochSVM) / windowSize);
@@ -104,18 +159,39 @@ for i = 1:length(sub_folder)
             numAboveRMS = sum(epochSVM(startIdx:endIdx) > rms_num);
             
             % If the mean is above the RMS, color the window red, otherwise blue
-            if numAboveRMS >= 2
+            if numAboveRMS >= 5
                 windowColors(i) = 1;  % Red
             else
-                windowColors(i) = 0;  % Blue
+                windowColors(i) = 0;  % None
             end
         end
         
         %% Plotting the Data with Windowed Coloring
-        figure;
-        hold on;
         
-        epochTime = (1:length(epochSVM)) * 60;  % Create time labels for each epoch (in seconds)
+        figure;
+        subplot(2, 1,1);
+        plot(theta_gravity, 'LineWidth', 1.5);
+        title('Theta Gravity');
+        xlabel('Time (samples)');
+        ylabel('Theta (degrees)');
+        grid on;
+
+         % Subplot 2: Plot SVM with windowed coloring
+        subplot(2, 1, 2);
+        hold on
+
+        
+        % colors
+
+        green = '#006633';
+        sage = '#949b78';
+        white = '#d2e4d6';
+
+        windowColorRGB = hex2rgb(green);
+        activeRGB = hex2rgb(green);
+        inactiveRGB = hex2rgb(sage);
+
+        epochTime = (1:length(epochSVM)) * epochSize;  % Create time labels for each epoch (in seconds)
         
         % Plot the windows with different colors based on mean comparison to RMS
         for i = 1:numWindows
@@ -127,22 +203,26 @@ for i = 1:length(sub_folder)
             
             % If window mean > RMS, plot in red, else blue
             if windowColors(i) == 1
-                plot(windowTime, epochSVM(startIdx:endIdx), 'r-', 'LineWidth', 2);  % Red line
+                plot(windowTime, epochSVM(startIdx:endIdx), 'k-', 'LineWidth', 2, Color=activeRGB);  % Red line
+                fill([windowTime(1), windowTime(end), windowTime(end), windowTime(1)], ...
+                     [0, 0, max(epochSVM), max(epochSVM)], windowColorRGB, 'FaceAlpha', .2, 'EdgeColor', 'none');
             else
-                plot(windowTime, epochSVM(startIdx:endIdx), 'b-', 'LineWidth', 2);  % Blue line
+                plot(windowTime, epochSVM(startIdx:endIdx), 'k-', 'LineWidth', 2);  % Blue line
+                
             end
         end
         
         % Add labels and title
         xlabel('Time (seconds)');
-        ylabel('Sum of SVM (240s epochs)');
-        title('Sum of Absolute SVM in 240-second Epochs (Windowed Coloring)');
-        grid on;
+        ylabel('Sum of SVM');
+        % xlim([0 6000])
+        % title('Sum of Absolute SVM in 240-second Epochs (Windowed Coloring)');
+        grid off;
         
         % Plot the RMS line
-        yline(rms_num, 'r--', 'RMS', 'LineWidth', 2);
+        % yline(rms_num, 'r--', 'RMS', 'LineWidth', 2);
+        hold off
         
-        hold off;
      
     end
 
