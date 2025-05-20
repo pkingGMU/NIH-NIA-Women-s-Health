@@ -2,6 +2,22 @@
 clc
 clear
 
+%%% CHANGEABLE USER VARIABLES %%%
+epochSize = 60; % seconds
+posture_window_size = 20000; % This is kind of arbitrary right now. Relative to how long the trial is.
+
+green = '#006633';
+sage = '#949b78';
+white = '#d2e4d6';
+
+stand_color = hex2rgb('#53b276');
+sit_color = hex2rgb('#752933');
+lying_color = hex2rgb('#0A0E29');
+
+windowColorRGB = hex2rgb(green);
+activeRGB = hex2rgb(green);
+inactiveRGB = hex2rgb(sage);
+
 %%% Local Imports
 % Add function folder to search path
 addpath(genpath('Functions'))
@@ -56,9 +72,6 @@ for i = 1:length(sub_folder)
         %   - https://raw.githubusercontent.com/digitalinteraction/openmovement/master/Software/Analysis/Matlab/epochs.m
         %
         
-        %%% CHANGEABLE USER VARIABLES %%%
-        epochSize = 60;
-        posture_window_size = 20000;
         
         % Load CWA file re-sampled at 100Hz
         fprintf('Loading and resampling data...\n');
@@ -178,30 +191,14 @@ for i = 1:length(sub_folder)
         ylabel('Accelerations');
         legend('Medial/Lateral', 'Vertical', 'Anterior/Posterior')
         
-        %% Plotting the Data with Windowed Coloring
+        %% Plotting Postural Classification %%
 
-        % colors
-
-        green = '#006633';
-        sage = '#949b78';
-        white = '#d2e4d6';
-        
-        stand_color = hex2rgb('#53b276');
-        sit_color = hex2rgb('#752933');
-        lying_color = hex2rgb('#0A0E29');
-        
-
-
-        windowColorRGB = hex2rgb(green);
-        activeRGB = hex2rgb(green);
-        inactiveRGB = hex2rgb(sage);
-        
         figure;
         subplot(2, 1,1);
         hold on
-
-        theta_time = (1:length(theta_gravity)) * 1;  % Create time labels for each epoch (in seconds)
-
+        
+        % Create time labels for each epoch (in seconds)
+        theta_time = (1:length(theta_gravity)) * 1;  
 
          % Plot the windows with different colors based on mean comparison to RMS
         for i = 1:posture_num_windows
@@ -227,10 +224,6 @@ for i = 1:length(sub_folder)
             end
         end
         
-        
-
-        
-        % plot(theta_gravity, 'LineWidth', 1.5);
         title('Theta Gravity');
         xlabel('Time (samples)');
         ylabel('Theta (degrees)');
@@ -238,38 +231,16 @@ for i = 1:length(sub_folder)
         hold off
         start = 800;
         trial_end = 28000;
-
-        % Label a point at x = 2
-        % text(start, 4000, 'Stand Still (Calibrate)');
-        % xline(start);
-        % text(start + 3000, 40, 'Jumping Jacks');
-        % xline(start + 3000);
-        % text(start + 6000, 40, 'Sitting');
-        % xline(start + 6000);
-        % text(start + 9000, 40, 'Sit Active');
-        % xline(start + 9000);
-        % text(start + 12000, 40, 'Stand Upright');
-        % xline(start + 12000)
-        % text(start + 15000, 40, 'Walking');
-        % xline(start + 15000)
-        % text(start + 18000, 40, 'Running');
-        % xline(start + 18000)
-        % text(start + 21000, 40, 'Lying');
-        % xline(start + 21000)
-        % text(start + 24000, 40, 'Stand Still (Calibrate)');
-        % xline(start + 24000)
-        % % 
-        % xlim([start, trial_end]);
-         % Subplot 2: Plot SVM with windowed coloring
-
-         xlim([0 11580000])
+    
+        %xlim([0 11580000])
         subplot(2, 1, 2);
         hold on
 
         
+        %% Plotting Activity Classificaiton %%
         
-
-        epochTime = (1:length(epochSVM)) * epochSize;  % Create time labels for each epoch (in seconds)
+        % Create time labels for each epoch (in seconds)
+        epochTime = (1:length(epochSVM)) * epochSize;  
         
         % Plot the windows with different colors based on mean comparison to RMS
         for i = 1:numWindows
@@ -294,39 +265,8 @@ for i = 1:length(sub_folder)
         xlabel('Time (seconds)');
         ylabel('Sum of SVM');
         
-        xlim([0 115800])
-        
-        start = 8;
-        trial_end = 280;
-
-        % Label a point at x = 2
-        % text(start, 20, 'Stand Still (Calibrate)');
-        % xline(start);
-        % text(start + 30, 20, 'Jumping Jacks');
-        % xline(start + 30);
-        % text(start + 60, 20, 'Sitting');
-        % xline(start + 60);
-        % text(start + 90, 20, 'Sit Active');
-        % xline(start + 90);
-        % text(start + 120, 42, 'Stand Upright');
-        % xline(start + 120)
-        % text(start + 150, 20, 'Walking');
-        % xline(start + 150)
-        % text(start + 180, 20, 'Running');
-        % xline(start + 180)
-        % text(start + 210, 20, 'Lying');
-        % xline(start + 210)
-        % text(start + 240, 20, 'Stand Still (Calibrate)');
-        % xline(start + 240)
-        % % 
-        % xlim([start, trial_end]);
-
-        % title('Sum of Absolute SVM in 240-second Epochs (Windowed Coloring)');
         grid off;
-        
-        % Plot the RMS line
-        % yline(rms_num, 'r--', 'RMS', 'LineWidth', 2);
-        hold off
+        hold off;
         
      
     end
