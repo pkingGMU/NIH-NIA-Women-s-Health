@@ -55,8 +55,10 @@ for i = 1:length(sub_folder)
         %   - https://raw.githubusercontent.com/digitalinteraction/openmovement/master/Software/Analysis/Matlab/SVM.m
         %   - https://raw.githubusercontent.com/digitalinteraction/openmovement/master/Software/Analysis/Matlab/epochs.m
         %
-
+        
+        %%% CHANGEABLE USER VARIABLES %%%
         epochSize = 60;
+        posture_window_size = 20000;
         
         % Load CWA file re-sampled at 100Hz
         fprintf('Loading and resampling data...\n');
@@ -79,32 +81,22 @@ for i = 1:length(sub_folder)
         nyquist = fs / 2;
         normalized_cutoff = cutoff / nyquist;
         
-        % Design the filter using the corrected syntax
+        % Filter using the corrected syntax
         [b, a] = ellip(order, rp, rs, normalized_cutoff);
         
-        % Step 3: Apply the low-pass filter to the accelerometer data
+        % Low-pass filter
         gravity_vector = filter(b, a, med_data);
-        
-        % data_accel = med_data - gravity_vector;
-        % 
-        % data_accel = data_accel(:, 2);
-        % 
-        % data_accel(data_accel < 0) = 0;
-        % 
-        % data_accel = data_accel ./ gravity_vector;
         
         data_grav = gravity_vector(:, 2);
         data_grav(data_grav < 0) = 0;
         
 
         theta_gravity = rad2deg(real(acos(data_grav)));
-        % theta_gravity(theta_gravity > 60 & theta_gravity < 500) = 0;
-
 
         
 
-        %% Window Size 
-        posture_window_size = 20000;
+        %% POSTURAL CLASSIFICATION %%
+        
         
         % Number of windows
         posture_num_windows = floor(length(theta_gravity) / posture_window_size);
@@ -113,12 +105,7 @@ for i = 1:length(sub_folder)
         for i = 1:posture_num_windows
             startIdx = (i - 1) * posture_window_size + 1;
             endIdx = i * posture_window_size;
-            
-            % % Count how many values exceed the RMS in the current window
-            % window_mean = mean(theta_gravity(startIdx:endIdx));
-            % 
-            % theta_gravity(startIdx:endIdx) = window_mean;
-
+           
             % Count how many values exceed the RMS in the current window
             stand_sum = sum(theta_gravity(startIdx:endIdx) <= 20 & theta_gravity(startIdx:endIdx) > 0 );
             sit_sum = sum(theta_gravity(startIdx:endIdx) > 20 & theta_gravity(startIdx:endIdx) <= 60);
@@ -138,11 +125,7 @@ for i = 1:length(sub_folder)
         end
         
 
-       
-        
-        
-        
-        %%
+        %% ACTIVITY CLASSIFICATION BINARY %%
         
         % BP-Filtered SVM-1
         fprintf('Calculating bandpass-filtered SVM(data)...\n');
@@ -152,14 +135,9 @@ for i = 1:length(sub_folder)
 
         svm_all(rms_idx == 1) = svm;
 
-
-        %%
         % Convert to 60 second epochs (sum of absolute SVM-1 values)
         epochSVM = epochs(abs(svm_all), epochSize * Fs);
 
-        
-        
-        
         
         %% RMS
         rms_num = sqrt(nanmean(epochSVM.^2)) / 1.5;
