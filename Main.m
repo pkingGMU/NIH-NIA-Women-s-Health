@@ -83,7 +83,7 @@ for i = 1:length(sub_folder)
         %% Angle adjaceent to gravity 
         med_data = medfilt1(data(:, [2,3,4]), 3);
 
-        % Step 2: Design the third-order elliptical IIR filter (discrete-time)
+        % Design the third-order elliptical IIR filter 
         fs = 100; % Sampling frequency (adjust to your data)
         cutoff = 0.25; % Cutoff frequency in Hz
         rp = 0.01; % Passband ripple in dB
