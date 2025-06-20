@@ -16,6 +16,25 @@ The script performs the following major steps:
 
 ---
 
+## Installation
+
+### Option 1: GitHub Users (Familiar with Git)
+
+1. Open your terminal or command prompt.
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/pkingGMU/NIH-NIA-Women-s-Health.git
+   ```
+3. Open MATLAB and navigate to the cloned project folder.
+
+### Option 2: Non-GitHub Users (Unfamiliar with Git)
+
+1. Visit the GitHub page: [https://github.com/pkingGMU/NIH-NIA-Women-s-Health](https://github.com/pkingGMU/NIH-NIA-Women-s-Health)
+2. Click the green **Code** button and choose **Download ZIP**.
+3. Extract the ZIP file to a location on your computer.
+4. Open MATLAB and navigate to the extracted project folder.
+
+
 ## How to use
 
 1. Place your `.cwa` files inside the `Data` folder following this structure:
